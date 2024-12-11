@@ -263,5 +263,31 @@ def delete_treatment(treatment_id):
         ), HTTPStatus.BAD_REQUEST
 
 
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify(
+        {
+            "error": "Not Found", "message": str(error)
+        }
+    ), HTTPStatus.NOT_FOUND
+
+@app.errorhandler(400)
+def bad_request(error):
+    return jsonify(
+        {
+            "error": "Bad Request", "message": str(error)
+        }
+    ), HTTPStatus.BAD_REQUEST
+
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify(
+        {
+            "error": "Internal Server Error", 
+            "message": "Something went wrong on the server."
+        }
+    ), HTTPStatus.INTERNAL_SERVER_ERROR
+
+
 if __name__ == "__main__":
     app.run(debug=True)
