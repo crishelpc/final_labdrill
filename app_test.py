@@ -174,3 +174,6 @@ def test_delete_treatment_success(mock_db):
     response = client.delete('/treatments/1')
     assert response.status_code == 200
     assert b"Treatment record deleted successfully" in response.data
+
+if __name__ == "__main__":
+    pytest.main()
