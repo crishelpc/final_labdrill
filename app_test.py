@@ -159,3 +159,18 @@ def test_get_patient_info_success(mock_db):
     response = client.get('/healthprofessionals/1/patients')
     assert response.status_code == 200
     assert response.json[0]["patientFirstName"] == "Aitor"
+
+# Deletion Tests
+def test_delete_patient_success(mock_db):
+    mock_db.rowcount = 1
+    client = app.test_client()
+    response = client.delete('/patients/1')
+    assert response.status_code == 200
+    assert b"Patient record deleted successfully" in response.data
+
+def test_delete_treatment_success(mock_db):
+    mock_db.rowcount = 1
+    client = app.test_client()
+    response = client.delete('/treatments/1')
+    assert response.status_code == 200
+    assert b"Treatment record deleted successfully" in response.data
