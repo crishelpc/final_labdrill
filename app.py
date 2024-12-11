@@ -91,5 +91,100 @@ def get_treatment_history(patient_id):
         FROM Treatments WHERE patientID = %s""", (patient_id,))
     return jsonify(data), HTTPStatus.OK
 
+@app.route("/patients", methods=["POST"])
+def add_patient():
+    data = request.get_json()
+    error_message, status_code = validate_patient_input(data)
+    if error_message:
+        return jsonify({"error": error_message}), status_code
+
+    try:
+        cursor = mysql.connection.cursor()
+        cursor.execute(
+            "INSERT INTO Patients (patientFirstName, patientLastName, patientHomePhone, patientEmailAddress) VALUES (%s, %s, %s, %s)",
+            (data['patientFirstName'], data['patientLastName'], data['patientHomePhone'], data['patientEmailAddress'])
+        )
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify(
+            {
+                "message": "Patient added successfully"
+            }
+        ), HTTPStatus.CREATED
+    
+    except Exception as e:
+        return jsonify(
+            {
+                "error": str(e)
+            }
+        ), HTTPStatus.BAD_REQUEST
+
+@app.route("/patientadmissions", methods=["POST"])
+def add_admission():
+    info = request.get_json()
+    error_message, status_code = validate_admission_input(info)
+    if error_message:
+        return jsonify(
+            {
+                "error": error_message
+            }
+        ), status_code
+
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute(
+            """INSERT INTO PatientAdmissions (patientID, dateOfAdmission, dateOfDischarge)
+            VALUES (%s, %s, %s)""",
+            (info["patientID"], info["dateOfAdmission"], info["dateOfDischarge"])
+        )
+        mysql.connection.commit()
+        rows_affected = cur.rowcount
+        cur.close()
+        return jsonify(
+            {
+                "message": "Admission added successfully", "rows_affected": rows_affected
+            }
+        ), HTTPStatus.CREATED
+    
+    except Exception as e:
+        return jsonify(
+            {"error": str(e)
+            }
+        ), HTTPStatus.BAD_REQUEST
+
+@app.route("/treatments", methods=["POST"])
+def add_treatment():
+    info = request.get_json()
+    error_message, status_code = validate_treatment_input(info)
+    if error_message:
+        return jsonify(
+            {
+                "error": error_message
+            }
+        ), status_code
+
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute(
+            """INSERT INTO Treatments (staffID, patientID, treatmentDescription, treatmentStatus)
+            VALUES (%s, %s, %s, %s)""",
+            (info['staffID'], info["patientID"], info["treatmentDescription"], info["treatmentStatus"])
+        )
+        mysql.connection.commit()
+        rows_affected = cur.rowcount
+        cur.close()
+        return jsonify(
+            {
+                "message": "Treatment of patient added successfully", "rows_affected": rows_affected
+            }
+        ), HTTPStatus.CREATED
+    
+    except Exception as e:
+        return jsonify(
+            {
+                "error": str(e)
+            }
+        ), HTTPStatus.BAD_REQUEST
+
 if __name__ == "__main__":
     app.run(debug=True)
