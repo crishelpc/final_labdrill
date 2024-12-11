@@ -185,6 +185,40 @@ def add_treatment():
                 "error": str(e)
             }
         ), HTTPStatus.BAD_REQUEST
+    
+
+@app.route("/treatments/<int:treatment_id>", methods=["PUT"])
+def update_treatment(treatment_id):
+    info = request.get_json()
+    treatmentStatus = info.get("treatmentStatus")
+    if not treatmentStatus:
+        return jsonify(
+            {
+                "error": "'treatmentStatus' is required"
+            }
+            ), HTTPStatus.BAD_REQUEST
+
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute(
+            """UPDATE Treatments SET treatmentStatus = %s WHERE treatmentID = %s""",
+            (treatmentStatus, treatment_id),
+        )
+        mysql.connection.commit()
+        rows_affected = cur.rowcount
+        cur.close()
+        return jsonify(
+            {
+                "message": "Patient treatment status updated successfully", "rows_affected": rows_affected
+            }
+        ), HTTPStatus.OK
+    
+    except Exception as e:
+        return jsonify(
+            {
+                "error": str(e)
+            }
+        ), HTTPStatus.BAD_REQUEST
 
 if __name__ == "__main__":
     app.run(debug=True)
