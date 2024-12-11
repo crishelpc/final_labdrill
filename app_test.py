@@ -81,3 +81,58 @@ def test_get_patient_admission_success(mock_db):
     response = client.get('/patientadmissions/1')
     assert response.status_code == 200
     assert response.json[0]['dateOfAdmission'] == "2024-01-01"
+
+# Treatments Tests
+def test_get_treatment_history_empty(mock_db):
+    mock_db.fetchall.return_value = []
+    client = app.test_client()
+    response = client.get('/treatments/999')
+    assert response.status_code == 200
+    assert response.json == []
+
+def test_get_treatment_history_success(mock_db):
+    mock_db.fetchall.return_value = [
+        {
+            "treatmentID": 1,
+            "treatmentDescription": "Physical Therapy",
+            "treatmentStatus": "Completed",
+        }
+    ]
+    client = app.test_client()
+    response = client.get('/treatments/1')
+    assert response.status_code == 200
+    assert response.json[0]['treatmentDescription'] == "Physical Therapy"
+
+def test_add_treatment_missing_fields(mock_db):
+    client = app.test_client()
+    response = client.post('/treatments', json={})
+    assert response.status_code == 400
+    assert b"'staffID' is required" in response.data
+
+def test_add_treatment_success(mock_db):
+    mock_db.rowcount = 1
+    client = app.test_client()
+    response = client.post(
+        '/treatments',
+        json={
+            "staffID": 1,
+            "patientID": 1,
+            "treatmentDescription": "Physical Therapy",
+            "treatmentStatus": "In Progress",
+        },
+    )
+    assert response.status_code == 201
+    assert b"Treatment of patient added successfully" in response.data
+
+def test_update_treatment_missing_status(mock_db):
+    client = app.test_client()
+    response = client.put('/treatments/1', json={})
+    assert response.status_code == 400
+    assert b"'treatmentStatus' is required" in response.data
+
+def test_update_treatment_success(mock_db):
+    mock_db.rowcount = 1
+    client = app.test_client()
+    response = client.put('/treatments/1', json={"treatmentStatus": "Completed"})
+    assert response.status_code == 200
+    assert b"Patient treatment status updated successfully" in response.data
