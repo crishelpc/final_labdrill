@@ -15,3 +15,47 @@ def test_index_page():
     response = client.get('/')
     assert response.status_code == 200
     assert b"WELCOME TO HOSPICE PATIENT CARE!" in response.data
+
+# Patients Tests
+def test_get_patients_empty(mock_db):
+    mock_db.fetchall.return_value = []
+    client = app.test_client()
+    response = client.get('/patients')
+    assert response.status_code == 200
+    assert response.json == []
+
+def test_get_patients(mock_db):
+    mock_db.fetchall.return_value = [
+        {
+            "patientID": 1,
+            "patientFirstName": "John",
+            "patientLastName": "Doe",
+            "patientHomePhone": "123456789",
+            "patientEmailAddress": "john@example.com",
+        }
+    ]
+    client = app.test_client()
+    response = client.get('/patients')
+    assert response.status_code == 200
+    assert response.json[0]['patientFirstName'] == "John"
+
+def test_add_patient_missing_fields(mock_db):
+    client = app.test_client()
+    response = client.post('/patients', json={})
+    assert response.status_code == 400
+    assert b"'patientFirstName' is required" in response.data
+
+def test_add_patient_success(mock_db):
+    mock_db.rowcount = 1
+    client = app.test_client()
+    response = client.post(
+        '/patients',
+        json={
+            "patientFirstName": "John",
+            "patientLastName": "Doe",
+            "patientHomePhone": "123456789",
+            "patientEmailAddress": "john@example.com",
+        },
+    )
+    assert response.status_code == 201
+    assert b"Patient added successfully" in response.data
