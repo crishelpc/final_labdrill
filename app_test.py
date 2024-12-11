@@ -136,3 +136,26 @@ def test_update_treatment_success(mock_db):
     response = client.put('/treatments/1', json={"treatmentStatus": "Completed"})
     assert response.status_code == 200
     assert b"Patient treatment status updated successfully" in response.data
+
+#Health professional
+def test_get_patient_info_not_found(mock_db):
+    mock_db.fetchall.return_value = []
+    client = app.test_client()
+    response = client.get('/healthprofessionals/999/patients')
+    assert response.status_code == 404
+    assert b"No patients found for this health professional" in response.data
+
+def test_get_patient_info_success(mock_db):
+    mock_db.fetchall.return_value = [
+        {
+            "patientID": 1,
+            "patientFirstName": "Aitor",
+            "patientLastName": "Reina",
+            "patientHomePhone": "(361) 548-9276",
+            "patientEmailAddress": "esarabia@gmail.com",
+        }
+    ]
+    client = app.test_client()
+    response = client.get('/healthprofessionals/1/patients')
+    assert response.status_code == 200
+    assert response.json[0]["patientFirstName"] == "Aitor"
