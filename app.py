@@ -219,6 +219,49 @@ def update_treatment(treatment_id):
                 "error": str(e)
             }
         ), HTTPStatus.BAD_REQUEST
+    
+@app.route('/patients/<int:patient_id>', methods=['DELETE'])
+def delete_patient(patient_id):
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("""DELETE FROM Patients WHERE patientID = %s""", (patient_id,))
+        mysql.connection.commit()
+        rows_affected = cur.rowcount
+        cur.close()
+        return jsonify(
+            {
+                "message": "Patient record deleted successfully", "rows_affected": rows_affected
+            }
+        ), HTTPStatus.OK
+    
+    except Exception as e:
+        return jsonify(
+            {
+                "error": str(e)
+            }
+        ), HTTPStatus.BAD_REQUEST
+
+@app.route('/treatments/<int:treatment_id>', methods=['DELETE'])
+def delete_treatment(treatment_id):
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("""DELETE FROM Treatments WHERE treatmentID = %s""", (treatment_id,))
+        mysql.connection.commit()
+        rows_affected = cur.rowcount
+        cur.close()
+        return jsonify(
+            {
+                "message": "Treatment record deleted successfully", "rows_affected": rows_affected
+            }
+        ), HTTPStatus.OK
+    
+    except Exception as e:
+        return jsonify(
+            {
+                "error": str(e)
+            }
+        ), HTTPStatus.BAD_REQUEST
+
 
 if __name__ == "__main__":
     app.run(debug=True)
